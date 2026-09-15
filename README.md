@@ -1,38 +1,24 @@
-# SDE Smart HVAC Dashboard
+# SDE Smart HVAC — Cloudflare Workers + D1
 
-Dashboard HVAC yang benar-benar membaca data dari database melalui REST API.
+Versi Cloudflare-native: Workers Static Assets + Worker API + D1. Tidak menggunakan Express/SQLite.
 
-## Stack
-- Node.js + Express
-- SQLite (`better-sqlite3`)
-- HTML/CSS/JavaScript vanilla
-- REST API
-- Polling 5 detik untuk tampilan live
+## Deploy
+1. `npm install`
+2. `npx wrangler d1 create sde-hvac-db`
+3. Masukkan `database_id` hasil command ke `wrangler.jsonc`.
+4. `npx wrangler d1 execute sde-hvac-db --remote --file=schema.sql`
+5. `npx wrangler deploy`
 
-## Jalankan
-1. Install Node.js 18+.
-2. Buka folder ini di terminal.
-3. Jalankan:
-   `npm install`
-4. Jalankan:
-   `npm start`
-5. Buka:
-   `http://localhost:3000`
-
-Database `sde_hvac.db` dibuat otomatis saat server pertama kali berjalan.
+Untuk Git integration Cloudflare: root repository adalah root project ini, build command `npm install`, deploy command `npx wrangler deploy`. Jangan set output directory lain karena `wrangler.jsonc` sudah menunjuk `./public`.
 
 ## API
-- `GET /api/dashboard` — summary, zone terbaru, histori 24 jam
-- `GET /api/devices` — daftar device + reading terakhir
-- `GET /api/devices/SDE-AC-001/history?hours=24` — histori sensor
-- `PATCH /api/devices/SDE-AC-001` — ubah `mode`, `target_temp`, atau `status`
-- `GET /api/health` — status database/API
+GET `/api/health`
+GET `/api/dashboard`
+GET `/api/devices/SDE-AC-001/history?hours=24`
+PATCH `/api/devices/SDE-AC-001`
+POST `/api/sensors`
 
-## Database production
-Saat ini SQLite dipakai agar proyek langsung bisa dijalankan. Untuk production, tabel `devices` dan `sensor_readings` bisa dipindahkan ke MySQL/PostgreSQL dan endpoint API tetap mempertahankan kontrak yang sama.
+Contoh sensor:
+`curl -X POST https://YOUR-DOMAIN/api/sensors -H 'content-type: application/json' -d '{"device_id":"SDE-AC-001","temperature":23.8,"humidity":54,"co2":612}'`
 
-## Integrasi IoT
-`setInterval()` pada `server.js` hanya simulator data. Untuk sensor nyata, ganti bagian tersebut dengan subscriber MQTT, Modbus gateway, OPC-UA, REST ingestion, atau service IoT yang Anda gunakan.
-
-Contoh payload sensor:
-`{ "device_id":"SDE-AC-001", "temperature":23.8, "humidity":54, "co2":612 }`
+Tambahkan authentication/API token sebelum endpoint sensor dibuka ke internet untuk production.

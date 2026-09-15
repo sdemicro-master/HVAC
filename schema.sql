@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS devices(id INTEGER PRIMARY KEY AUTOINCREMENT,device_id TEXT NOT NULL UNIQUE,name TEXT NOT NULL,room TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'online',mode TEXT NOT NULL DEFAULT 'auto',target_temp REAL NOT NULL DEFAULT 24.0,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS sensor_readings(id INTEGER PRIMARY KEY AUTOINCREMENT,device_id TEXT NOT NULL,temperature REAL NOT NULL,humidity REAL NOT NULL,co2 REAL NOT NULL,recorded_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(device_id) REFERENCES devices(device_id));
+CREATE INDEX IF NOT EXISTS idx_sensor_device_time ON sensor_readings(device_id,recorded_at);
+INSERT OR IGNORE INTO devices(device_id,name,room,status,mode,target_temp) VALUES ('SDE-AC-001','Living Room AC','Living Room','online','auto',23.5),('SDE-AC-002','Bedroom AC','Bedroom','online','auto',22.5),('SDE-AC-003','Workspace AC','Workspace','online','cool',24.0),('SDE-AC-004','Meeting Room AC','Meeting Room','standby','auto',25.0);
+INSERT INTO sensor_readings(device_id,temperature,humidity,co2) SELECT 'SDE-AC-001',23.8,54,612 WHERE NOT EXISTS(SELECT 1 FROM sensor_readings WHERE device_id='SDE-AC-001');
+INSERT INTO sensor_readings(device_id,temperature,humidity,co2) SELECT 'SDE-AC-002',22.6,51,540 WHERE NOT EXISTS(SELECT 1 FROM sensor_readings WHERE device_id='SDE-AC-002');
+INSERT INTO sensor_readings(device_id,temperature,humidity,co2) SELECT 'SDE-AC-003',24.1,57,738 WHERE NOT EXISTS(SELECT 1 FROM sensor_readings WHERE device_id='SDE-AC-003');
+INSERT INTO sensor_readings(device_id,temperature,humidity,co2) SELECT 'SDE-AC-004',25.2,59,810 WHERE NOT EXISTS(SELECT 1 FROM sensor_readings WHERE device_id='SDE-AC-004');
